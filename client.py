@@ -1,4 +1,5 @@
 import socket
+import base64
 
 def displayMenu():
     print('1. Send a message')
@@ -47,15 +48,32 @@ def main():
         # Get the recipient from the user
         recipient = input('Enter the recipient: ')
 
+        print("Select a mimetype:")
+        print("1. application/octet-stream (base64)")
+        print("2. text/plain")
+        mimetype = input("Enter your choice: ")
+        mimetype = 'application/octet-stream' if mimetype == '1' else 'text/plain'
+
         # Read the message from the file
         with open(message, 'r') as f:
             message = f.read()
 
+        if mimetype == 'application/octet-stream':
+            message = base64.b64encode(message.encode('utf-8')).decode('utf-8')
+
+        print("Encoded Message:", message)
+        print("Encoded Message Type:", type(message))
+
         # Add the recipient to the message
         message = "To: " + recipient + '\n' + message
+        message = "MIME-Version: 1.0\nContent-Type: " + mimetype + "\n" + message
+
+        print("Final Message", message)
 
         # Send the message to the proxy server
+        print("About to send message to proxy")
         s.sendall(message.encode())
+        print("Message sent to proxy")
         while True:
             resp = s.recv(1024).decode()
             if resp:

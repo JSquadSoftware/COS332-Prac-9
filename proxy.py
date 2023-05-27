@@ -15,12 +15,31 @@ def send_message(message, recipient):
     print(s.recv(512).decode('UTF-8'))
     s.send(b'DATA\r\n')
     print(s.recv(512).decode('UTF-8'))
-    s.send(b'Subject: Ayo Julian\r\n')
+    s.send(b'Subject: Newspeak production\r\n')
     content = message.encode('UTF-8')
     s.send(content + b'\r\n.\r\n')
     print(s.recv(512).decode('UTF-8'))
     s.send(b'QUIT\r\n')
     s.close()
+
+def get_mime_type(message):
+    content_type = None
+
+    # Split the message into lines
+    lines = message.split('\n')
+
+    # Search for the Content-Type header
+    for line in lines:
+        if line.startswith('Content-Type:'):
+            # Extract the content type value
+            content_type = line.split(':', 1)[1].strip()
+            break
+
+    print("Content Type:", content_type)
+    print("Content Type Type:", type(content_type))
+    return content_type.strip()
+
+
 
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,11 +53,14 @@ def main():
     print('Received connection from:', client_address)
 
     while True:
-        data = client_socket.recv(1024).decode()
+        data = client_socket.recv(1024).decode('utf-8')
         if not data:
             continue
+        print("Received data:", data)
+        mimetype = get_mime_type(data)
+        print("Got mimetype: ", mimetype)
         print('Received message from client:', data)
-        recipient, data = newspeak(data)
+        recipient, data = newspeak(data, mimetype)
 
         ## TEST Remove
         print("Data: ", data)
